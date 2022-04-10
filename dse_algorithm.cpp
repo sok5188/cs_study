@@ -325,8 +325,8 @@ int main() {
     cin >> plaintext;
     cout << "key :";
     cin >> key;
-    //plaintext = "0123456789ABCDEF";
-    //key = "133457799BBCDFF1";
+    /*plaintext = "0123456789ABCDEF";
+    key = "133457799BBCDFF1";*/
     string bin_key = hex_to_bin(key);
     string key_v = initial_key(bin_key);
     string before_key = key_v;
