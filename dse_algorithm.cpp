@@ -325,17 +325,14 @@ int main() {
     cin >> plaintext;
     cout << "key :";
     cin >> key;
-    /*plaintext = "0123456789ABCDEF";
+   /* plaintext = "0123456789ABCDEF";
     key = "133457799BBCDFF1";*/
     string bin_key = hex_to_bin(key);
-    string key_v = initial_key(bin_key);
-    string before_key = key_v;
+    string key_v = initial_key(bin_key);    
 
     for (int i = 0; i < 16; i++) {
         string key_s = shift_key(&key_v, i);
         K[i] = permute_key(key_s);
-
-        before_key = key_s;
     }
 
 
