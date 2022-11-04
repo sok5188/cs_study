@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "http": "^0.0.1-security",
+    "mysql": "^2.18.1",
+    "path": "^0.12.7",
+    "querystring": "^0.2.1",
+    "sanitize-html": "^2.7.2",
+    "url": "^0.11.0"
+  }
+}
