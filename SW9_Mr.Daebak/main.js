@@ -1,34 +1,40 @@
-var http = require('http');
-var fs = require('fs');
-var url = require('url');
-var qs = require('querystring');
-var template = require('./lib/template.js');
-var topic=require('./lib/topic.js');
-var path = require('path');
-var sanitizeHtml = require('sanitize-html');
-var mysql = require('mysql');
+var express = require("express");
+var session = require("express-session");
+var fs = require("fs");
+//var FileStore = require("session-file-store")(session);
+var app = express();
+var port = 4000;
+var session = require("express-session");
+var FileStore = require("session-file-store")(session);
+var bodyParser = require("body-parser");
+var compression = require("compression");
+var helmet = require("helmet");
+var homeRouter = require("./routes/home.js");
+var authRouter = require("./routes/auth.js");
 
-var app = http.createServer(function (request, response) {
-    var _url = request.url;
-    var queryData = url.parse(_url, true).query;
-    var pathname = url.parse(_url, true).pathname;
-    if (pathname === "/") {
-      if (queryData.id === undefined) {
-        topic.home(request, response);
-      } else {
-        topic.page(request, response);
-      }
-    } else if (pathname === "/order") {
-      topic.order(request, response);
-    } else if (pathname === "/create_process") {
-      topic.create_process(request, response);
-    } else if (pathname === "/update") {
-      topic.update(request, response);
-    }
-     else {
-      response.writeHead(404);
-      response.end("Not found");
-    }
-  });
-  app.listen(3000);
-  
+app.use(helmet());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(compression());
+
+app.use(
+  session({
+    secret: "keyboard cat",
+    resave: false,
+    saveUninitialized: true,
+    store: new FileStore(),
+  })
+);
+
+app.use("/", homeRouter);
+app.use("/auth", authRouter);
+
+app.use(function (req, res, next) {
+  res.status(404).send("Sorry cant find that!");
+});
+app.use(function (err, req, res, next) {
+  console.error(err.stack);
+  res.status(500).send("Something broke!");
+});
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`);
+});
