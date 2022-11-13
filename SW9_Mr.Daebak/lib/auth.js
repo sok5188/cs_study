@@ -7,9 +7,10 @@ module.exports = {
     }
   },
   Status: function authStatus(request, response) {
-    var authstatus = '<a href="/auth/login">login</a>';
+    var authstatus =
+      '<a href="/auth/login">login</a> <a href="/auth/signin">signin</a> ';
     if (this.IsAuth(request, response)) {
-      authstatus = `${request.session.nickname}|<a href="/auth/logout">logout</a>`;
+      authstatus = `${request.session.name}|<a href="/auth/logout">logout</a>`;
     }
     return authstatus;
   },

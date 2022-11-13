@@ -11,6 +11,8 @@ var compression = require("compression");
 var helmet = require("helmet");
 var homeRouter = require("./routes/home.js");
 var authRouter = require("./routes/auth.js");
+var orderRouter = require("./routes/order.js");
+var manageRouter = require("./routes/manage.js");
 
 app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -27,6 +29,8 @@ app.use(
 
 app.use("/", homeRouter);
 app.use("/auth", authRouter);
+app.use("/order", orderRouter);
+app.use("/manage", manageRouter);
 
 app.use(function (req, res, next) {
   res.status(404).send("Sorry cant find that!");
