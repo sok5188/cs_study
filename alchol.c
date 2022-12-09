@@ -3,7 +3,7 @@
 #include <util/delay.h>
 #include <avr/interrupt.h>
 
-#define DO 7  // Æ÷Æ® EÀÇ 7¹øÇÉ
+#define DO 7  // í¬íŠ¸ Eì˜ 7ë²ˆí•€
 
 #define STOP 0
 #define GO 1
@@ -35,16 +35,16 @@ unsigned char fnd_sel[4] = {
 unsigned char fnd[4];
 
 SIGNAL(SIG_INTERRUPT4) {
-  	state = GO; // state ¸¦ Go·Î º¯°æÇÏ°í ÃøÁ¤À» »õ·Î ½ÃÀÛÇÔ 
+  	state = GO; // state ë¥¼ Goë¡œ ë³€ê²½í•˜ê³  ì¸¡ì •ì„ ìƒˆë¡œ ì‹œì‘í•¨ 
 	count = 0;
   	stop_time = 0;
 }
 
 SIGNAL(SIG_INTERRUPT5) {
-  state = STOP; // ÃÊ±âÈ­, ¸®¼Â
+  state = STOP; // ì´ˆê¸°í™”, ë¦¬ì…‹
 	stop_time=count;
-	//Áö±İÀº ÀÓ½Ã·Î ±×³É ÇöÀç count°ªÀ» stoptime¿¡ ÀúÀå
-	// ¾ËÄÚ¿Ã ÃøÁ¤ °ªÀ» ¹Ş°ÔµÇ¸é stop-timeÀ» ÃÖ´ë°ªÀ¸·Î ÀúÀå
+	//ì§€ê¸ˆì€ ì„ì‹œë¡œ ê·¸ëƒ¥ í˜„ì¬ countê°’ì„ stoptimeì— ì €ì¥
+	// ì•Œì½”ì˜¬ ì¸¡ì • ê°’ì„ ë°›ê²Œë˜ë©´ stop-timeì„ ìµœëŒ€ê°’ìœ¼ë¡œ ì €ì¥
 }
 
 //set fnd with val
@@ -87,23 +87,48 @@ void set_leds(int val){
         PORTA=0b11111111;
     }
 }
+void init_adc() {
+  ADMUX = 0x00;
+  // REFS(1:0) = "00" AREF(+5V) ê¸°ì¤€ì „ì•• ì‚¬ìš©
+  // ADLAR = '0' ë””í´íŠ¸ ì˜¤ë¥¸ìª½ ì •ë ¬
+  // MUX(4:0) = "00000" ADC0 ì‚¬ìš©, ë‹¨ì¼ ì…ë ¥
+  ADCSRA = 0x87;
+  // ADEN = '1' ADC Enable
+  // ADFR = '0' single conversion ëª¨ë“œ
+  // ADPS(2:0) = "111" í”„ë¦¬ìŠ¤ì¼€ì¼ëŸ¬ 128ë¶„ì£¼
+}
+
+unsigned short read_adc() {
+  unsigned char adc_low, adc_high;
+  unsigned short value;
+  ADCSRA |= 0x40; // ADC start conversion, ADSC = '1'
+  while ((ADCSRA & 0x10) != 0x10) // ADC ë³€í™˜ ì™„ë£Œ ê²€ì‚¬
+  ;
+  adc_low = ADCL; // ë³€í™˜ëœ Low ê°’ ì½ì–´ì˜¤ê¸°
+  adc_high = ADCH; // ë³€í™˜ëœ High ê°’ ì½ì–´ì˜¤ê¸°
+  value = (adc_high << 8) | adc_low;
+  // value ëŠ” High ë° Low ì—°ê²°í•œ 16ë¹„íŠ¸ê°’
+  return value;
+}
 
 void init(){
 	DDRC = 0xff;
   	DDRG = 0x0f;
-  	DDRA = 0xff; // Æ÷Æ® A¸¦ Ãâ·Â Æ÷Æ®·Î »ç¿ë
+  	DDRA = 0xff; // í¬íŠ¸ Aë¥¼ ì¶œë ¥ í¬íŠ¸ë¡œ ì‚¬ìš©
 	DDRB = 0x10;
-  //EÆ÷Æ® 4,5¸¦ inputÀ¸·Î »ç¿ë ?
+  //Eí¬íŠ¸ 4,5ë¥¼ inputìœ¼ë¡œ ì‚¬ìš© ?
   	DDRE = 0xcf;
 
 	EICRB = 0x0a; //falling edge
  	EIMSK = 0x30; //interrupt en
  	SREG |= 1 << 7;
+	init_adc();
 }
 
 int main() {
  	init();
   while (1) {
+	  int val=read_adc();
     if (count == 10000)
       count = 0;
     //set_light(count);
@@ -116,7 +141,7 @@ int main() {
 	//_delay_ms(5);
 
 	if(state==STOP){
-	//ÃøÁ¤ Á¾·á½Ã ÃÖ°í ¾ËÄÚ¿Ã ³óµµ¸¦ Ç¥½Ã(ÇöÀç´Â stop time¸¸ Ç¥½Ã)
+	//ì¸¡ì • ì¢…ë£Œì‹œ ìµœê³  ì•Œì½”ì˜¬ ë†ë„ë¥¼ í‘œì‹œ(í˜„ì¬ëŠ” stop timeë§Œ í‘œì‹œ)
 		while(state==STOP){
 			set_light(stop_time);
 			_delay_ms(3);
@@ -124,8 +149,8 @@ int main() {
 		}
 	}
 	else{
-	//GO : ÃøÁ¤Áß
-		set_light(count);
+	//GO : ì¸¡ì •ì¤‘
+		set_light(val);
 		set_leds(count);
 		count++;
 		//_delay_ms(3);
